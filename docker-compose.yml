@@ -1,0 +1,46 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # Userbot приложение
+  userbot:
+    build: .
+    container_name: telegram-userbot
+    restart: unless-stopped
+    volumes:
+      # Монтируем логи для сохранения между перезапусками
+      - ./logs:/app/logs
+      # Монтируем сессии для сохранения авторизации
+      - ./sessions:/app/sessions
+      # Монтируем конфиг для обновления без пересборки
+      - ./.env:/app/.env:ro
+#    environment:
+#      # Передаем настройки прокси в приложение
+#      - SOCKS_PROXY_HOST=mtproto-bridge
+#      - SOCKS_PROXY_PORT=1080
+    networks:
+      - userbot-network
+    # Ограничения ресурсов
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+#  # Опционально: мониторинг логов
+#  log-viewer:
+#    image: alpine:latest
+#    container_name: userbot-logs
+#    restart: no
+#    volumes:
+#      - ./logs:/logs:ro
+#    command: tail -f /logs/userbot.log
+#    profiles:
+#      - debug
+
+networks:
+  userbot-network:
+    driver: bridge
